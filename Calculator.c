@@ -55,7 +55,8 @@ void remove_spaces(char *str) {
     int newIndex = 0;
 
     for (int i = 0; i < len; i++) {
-        if (isspace(str[i])) {
+        if (str[i] == ' ' || str[i] == '\t' || str[i] == '\n' || 
+            str[i] == '\r' || str[i] == '\v' || str[i] == '\f') {
             continue;  
         }
         str[newIndex++] = str[i];  
