@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define USERDATA "userdata.txt"
+#define MAX_INPUT_LEN 100
 
 typedef struct employee {
     int unique_id;
@@ -10,7 +12,7 @@ typedef struct employee {
     int age;
 } employee;
 
-void checkFileExistence() {
+void createFileIfNotExists() {
     FILE *userFile = fopen(USERDATA, "r");
     if (userFile == NULL) {
         userFile = fopen(USERDATA, "w");
@@ -18,6 +20,23 @@ void checkFileExistence() {
     } else {
         fclose(userFile);
     }
+}
+
+int isValidName(char *name) {
+    for (int i = 0; i < strlen(name); i++) {
+        if (!isalpha(name[i]) && name[i] != ' ') {
+            return 0; 
+        }
+    }
+    return 1; 
+}
+
+int isValidAge(int age) {
+    return (age > 0);  
+}
+
+int isValidId(int id) {
+    return (id > 0);  
 }
 
 void create() {
@@ -31,7 +50,10 @@ void create() {
         char existing_name[20];
         int existing_age;
         printf("Enter the unique_id of employee: ");
-        scanf("%d", &e.unique_id);
+        while (scanf("%d", &e.unique_id) != 1 || !isValidId(e.unique_id)) {
+            printf("Invalid ID. Please enter a valid positive integer ID: ");
+            clearInputBuffer();
+        }
         while (fscanf(userFile, "%d,%19[^,],%d\n", &existing_id, existing_name, &existing_age) != -1) {
             if (existing_id == e.unique_id) {
                 id_exists = 1;
@@ -48,12 +70,21 @@ void create() {
     if (userFile == NULL) {
         return;
     }
-    getchar();
+    getchar();  
     printf("Enter the name of employee: ");
-    scanf("%[^\n]s", e.name);
-    getchar();
+    while (fgets(e.name, sizeof(e.name), stdin) != NULL) {
+        e.name[strcspn(e.name, "\n")] = '\0';  
+        if (isValidName(e.name)) {
+            break;
+        } else {
+            printf("Invalid name. Please enter a valid name: ");
+        }
+    }
     printf("Enter the age of employee: ");
-    scanf("%d", &e.age);
+    while (scanf("%d", &e.age) != 1 || !isValidAge(e.age)) {
+        printf("Invalid age. Please enter a valid positive integer age: ");
+        clearInputBuffer();
+    }
     fprintf(userFile, "%d,%s,%d\n", e.unique_id, e.name, e.age);
     printf("Employee created.\n");
     fclose(userFile);
@@ -87,16 +118,28 @@ void update() {
         return;
     }
     printf("Enter unique_id to update: ");
-    scanf("%d", &id);
+    while (scanf("%d", &id) != 1 || !isValidId(id)) {
+        printf("Invalid ID. Please enter a valid positive integer ID: ");
+        clearInputBuffer();
+    }
     while (fscanf(userFile, "%d,%19[^,],%d\n", &e.unique_id, e.name, &e.age) != -1) {
         if (e.unique_id == id) {
             found = 1;
             printf("Enter the new name: ");
             getchar();
-            scanf("%[^\n]s", e.name);
-            getchar();
+            while (fgets(e.name, sizeof(e.name), stdin) != NULL) {
+                e.name[strcspn(e.name, "\n")] = '\0';  // Remove newline at end of string
+                if (isValidName(e.name)) {
+                    break;
+                } else {
+                    printf("Invalid name. Please enter a valid name: ");
+                }
+            }
             printf("Enter the new age: ");
-            scanf("%d", &e.age);
+            while (scanf("%d", &e.age) != 1 || !isValidAge(e.age)) {
+                printf("Invalid age. Please enter a valid positive integer age: ");
+                clearInputBuffer();
+            }
         }
         fprintf(tempFile, "%d,%s,%d\n", e.unique_id, e.name, e.age);
     }
@@ -127,7 +170,10 @@ void delete() {
         return;
     }
     printf("Enter unique_id to delete: ");
-    scanf("%d", &id);
+    while (scanf("%d", &id) != 1 || !isValidId(id)) {
+        printf("Invalid ID. Please enter a valid positive integer ID: ");
+        clearInputBuffer();
+    }
     while (fscanf(userFile, "%d,%19[^,],%d\n", &e.unique_id, e.name, &e.age) != -1) {
         if (e.unique_id == id) {
             found = 1;
@@ -147,8 +193,27 @@ void delete() {
     }
 }
 
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+int getChoice() {
+    int choice;
+    while (1) {
+        printf("\nEnter Your Choice: ");
+        if (scanf("%d", &choice) != 1) {
+            clearInputBuffer();
+            printf("Invalid choice. Please enter a correct choice.\n");
+        } else {
+            break;
+        }
+    }
+    return choice;
+}
+
 int main() {
-    checkFileExistence();
+    createFileIfNotExists();
     int choice;
     do {
         printf("\n1.CREATE");
@@ -157,8 +222,8 @@ int main() {
         printf("\n4.DELETE");
         printf("\n0.EXIT");
 
-        printf("\nEnter Your Choice: ");
-        scanf("%d", &choice);
+        choice = getChoice();  
+
         switch (choice) {
             case 1:
                 create();
@@ -176,7 +241,7 @@ int main() {
                 printf("Exiting...\n");
                 break;
             default:
-                printf("Invalid choice.\n");
+                printf("Invalid choice. Please enter a correct choice.\n");
         }
     } while (choice != 0);
     return 0;
