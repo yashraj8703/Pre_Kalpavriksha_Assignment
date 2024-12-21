@@ -73,8 +73,8 @@ int validate_expression(char *str) {
 
     int lastCharWasOperator = 0;
     for (int i = 0; i < get_string_length(str); i++) {
-        if (!isdigit(str[i]) && str[i] != '+' && 
-            str[i] != '-' && str[i] != '*' && str[i] != '/' ) {
+        if ((str[i] < '0' || str[i] > '9') && str[i] != '+' && 
+            str[i] != '-' && str[i] != '*' && str[i] != '/') {
             printf("Error: Invalid character '%c'.\n", str[i]);
             return 0;  
         }
@@ -108,14 +108,14 @@ int calculator(char* validUserInputs) {
 
     while (i < len) {
         
-        if (isdigit(validUserInputs[i])) {
-            int num = 0;
-            while (i < len && isdigit(validUserInputs[i])) {
-                num = num * 10 + (validUserInputs[i] - '0');
-                i++;
-            }
-            values[++valuesTop] = num;
-        }
+        if (validUserInputs[i] >= '0' && validUserInputs[i] <= '9') {
+    int num = 0;
+    while (i < len && validUserInputs[i] >= '0' && validUserInputs[i] <= '9') {
+        num = num * 10 + (validUserInputs[i] - '0');
+        i++;
+    }
+    values[++valuesTop] = num;
+}
         
         else if (validUserInputs[i] == '+' || validUserInputs[i] == '-' || validUserInputs[i] == '*' || validUserInputs[i] == '/') {
             while (operatorsTop >= 0 && precedence(validUserInputs[i]) <= precedence(operators[operatorsTop])) {
