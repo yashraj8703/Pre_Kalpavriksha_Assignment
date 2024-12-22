@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #define USERDATA "userdata.txt"
 #define MAX_INPUT_LEN 100
@@ -22,9 +21,15 @@ void createFileIfNotExists() {
     }
 }
 
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
 int isValidName(char *name) {
     for (int i = 0; i < strlen(name); i++) {
-        if (!isalpha(name[i]) && name[i] != ' ') {
+        char ch = name[i];
+        if (!((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == ' ')) {
             return 0; 
         }
     }
@@ -193,10 +198,6 @@ void delete() {
     }
 }
 
-void clearInputBuffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
 
 int getChoice() {
     int choice;
